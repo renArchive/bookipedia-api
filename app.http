@@ -1,0 +1,5 @@
+### GET books
+GET http://localhost:3002/books?author=All&series=All&genres=[]
+
+### GET books by author
+GET http://localhost:3002/books?author=1&series=All&genres=[]
