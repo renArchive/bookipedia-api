@@ -72,6 +72,28 @@ export class BookModel {
             total: booksTotal,
         }
     }
+
+    static async getList() {
+        const [book] = await db_connection.query(`SELECT BIN_TO_UUID(id) id, title, cover FROM book ORDER BY title;`)
+
+        return {
+            book: book
+        }
+    }
+
+    static async getByName ({searchBy}) {
+        const name = `%${searchBy}%`
+
+        const [book] = await db_connection.query(
+            `SELECT BIN_TO_UUID(id) id, title, cover FROM book 
+            WHERE UPPER(title) LIKE UPPER(?)
+            ORDER BY title;`,
+            [name])
+
+        return {
+            book: book
+        }
+    }
 }
 
 async function handleSortTypesWithGenres (genres, sortBy, page) {
