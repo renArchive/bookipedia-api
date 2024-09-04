@@ -98,211 +98,62 @@ export class BookModel {
 
 async function handleSortTypesWithGenres (genres, sortBy, page) {
     const skip = (page - 1 ) * PAGE_LIMIT
+    const orderBy = sortBy[0] === 'title' ? 'title' : 'rate'
+    const orderDirection = sortBy[1] === 'asc' ? 'ASC' : 'DESC'
 
-    if (sortBy[0] === 'title') {
-        const [book] = sortBy[1] === 'asc'
-            ? await db_connection.query(
-                `SELECT DISTINCT BIN_TO_UUID(b.id) id, b.cover, b.rate, b.serie_id, b.title FROM book as b
+    const query = `SELECT DISTINCT BIN_TO_UUID(b.id) id, b.cover, b.rate, b.serie_id, b.title FROM book as b
                 INNER JOIN book_genre as bg ON bg.book_id = b.id
-                WHERE bg.genre_id IN (?)
-                ORDER BY b.title
-                LIMIT ?
-                OFFSET ?;`,
-                [genres, PAGE_LIMIT, skip])
-            : await db_connection.query(
-                `SELECT DISTINCT BIN_TO_UUID(b.id) id, b.cover, b.rate, b.serie_id, b.title FROM book as b
-                INNER JOIN book_genre as bg ON bg.book_id = b.id
-                WHERE bg.genre_id IN (?)
-                ORDER BY b.title DESC
-                LIMIT ?
-                OFFSET ?;`,
-                [genres, PAGE_LIMIT, skip])
+                WHERE bg.genre_id IN (${genres})
+                ORDER BY b.${orderBy} ${orderDirection}
+                LIMIT ${PAGE_LIMIT}
+                OFFSET ${skip};`
+    const [book] = await db_connection.query(query)
 
-        return book
-    } else {
-        const [book] = sortBy[1] === 'asc'
-            ? await db_connection.query(
-                `SELECT DISTINCT BIN_TO_UUID(b.id) id, b.cover, b.rate, b.serie_id, b.title FROM book as b
-                INNER JOIN book_genre as bg ON bg.book_id = b.id
-                WHERE bg.genre_id IN (?)
-                ORDER BY b.rate
-                LIMIT ?
-                OFFSET ?;`,
-                [genres, PAGE_LIMIT, skip])
-            : await db_connection.query(
-                `SELECT DISTINCT BIN_TO_UUID(b.id) id, b.cover, b.rate, b.serie_id, b.title FROM book as b
-                INNER JOIN book_genre as bg ON bg.book_id = b.id
-                WHERE bg.genre_id IN (?)
-                ORDER BY b.rate DESC
-                LIMIT ?
-                OFFSET ?;`,
-                [genres, PAGE_LIMIT, skip])
-
-        return book
-    }
+    return book
 }
 
 async function handleSortTypesWithSeries (series, sortBy, page) {
     const skip = (page - 1 ) * PAGE_LIMIT
 
-    if (sortBy[0] === 'title') {
-        const [book] = sortBy[1] === 'asc'
-            ? await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-                WHERE serie_id = ?
-                ORDER BY title
-                LIMIT ?
-                OFFSET ?;`,
-                [series, PAGE_LIMIT, skip])
-            : await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-                WHERE serie_id = ?
-                ORDER BY title DESC
-                LIMIT ?
-                OFFSET ?;`,
-                [series, PAGE_LIMIT, skip])
-        
-        return book
-    }  if (sortBy[0] === 'order') {
-        const [book] = sortBy[1] === 'asc'
-            ? await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-                WHERE serie_id = ?
-                ORDER BY series_num
-                LIMIT ?
-                OFFSET ?;`,
-                [series, PAGE_LIMIT, skip])
-            : await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-                WHERE serie_id = ?
-                ORDER BY series_num DESC
-                LIMIT ?
-                OFFSET ?;`,
-                [series, PAGE_LIMIT, skip])
-        
-        return book
-    } else {
-        const [book] = sortBy[1] === 'asc'
-            ? await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-                WHERE serie_id = ?
-                ORDER BY rate
-                LIMIT ?
-                OFFSET ?;`,
-                [series, PAGE_LIMIT, skip])
-            : await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-                WHERE serie_id = ?
-                ORDER BY rate DESC
-                LIMIT ?
-                OFFSET ?;`,
-                [series, PAGE_LIMIT, skip])
+    const orderBy = sortBy[0] === 'order' ? 'series_num' : (sortBy[0] === 'title' ? 'title' : 'rate')
+    const orderDirection = sortBy[1] === 'asc' ? 'ASC' : 'DESC'
 
-        return book
-    }
+    const query = `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
+            WHERE serie_id = ${series}
+            ORDER BY ${orderBy} ${orderDirection}
+            LIMIT ${PAGE_LIMIT}
+            OFFSET ${skip};`
+    const [book] = await db_connection.query(query)
+
+    return book
 }
 
 async function handleSortTypesWithAuthor (author, sortBy, page) {
     const skip = (page - 1 ) * PAGE_LIMIT
+    const orderBy = sortBy[0] === 'title' ? 'title' : 'rate'
+    const orderDirection = sortBy[1] === 'asc' ? 'ASC' : 'DESC'
 
-    if (sortBy[0] === 'title') {
-        const [book] = sortBy[1] === 'asc'
-        ? await db_connection.query(
-            `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-            WHERE author_id = ?
-            ORDER BY title
-            LIMIT ?
-            OFFSET ?;`,
-            [author, PAGE_LIMIT, skip])
-        : await db_connection.query(
-            `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-            WHERE author_id = ?
-            ORDER BY title DESC
-            LIMIT ?
-            OFFSET ?;`,
-            [author, PAGE_LIMIT, skip])
+    const query = `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
+            WHERE author_id = ${author}
+            ORDER BY ${orderBy} ${orderDirection}
+            LIMIT ${PAGE_LIMIT}
+            OFFSET ${skip};`
+    const [book] = await db_connection.query(query)
 
-        return book
-    } else {
-        const [book] = sortBy[1] === 'asc'
-        ? await db_connection.query(
-            `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-            WHERE author_id = ?
-            ORDER BY rate
-            LIMIT ?
-            OFFSET ?;`,
-            [author, PAGE_LIMIT, skip])
-        : await db_connection.query(
-            `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book
-            WHERE author_id = ?
-            ORDER BY rate DESC
-            LIMIT ?
-            OFFSET ?;`,
-            [author, PAGE_LIMIT, skip])
-
-        return book
-    }
+    return book
 }
 
 async function handleSortTypesWithAuthorAndSeries (author, series, sortBy, page) {
     const skip = (page - 1 ) * PAGE_LIMIT
+    const orderBy = sortBy[0] === 'order' ? 'series_num' : (sortBy[0] === 'title' ? 'title' : 'rate')
+    const orderDirection = sortBy[1] === 'asc' ? 'ASC' : 'DESC'
 
-    if (sortBy[0] === 'title') {
-        const [book] = 
-            sortBy[1] === 'asc'
-            ? await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book 
-                WHERE author_id = ? AND serie_id = ?
-                ORDER BY title
-                LIMIT ?
-                OFFSET ?;`,
-                [author, series, PAGE_LIMIT, skip])
-            : await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book 
-                WHERE author_id = ? AND serie_id = ?
-                ORDER BY title DESC
-                LIMIT ?
-                OFFSET ?;`,
-                [author, series, PAGE_LIMIT, skip])
+    const query = `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book 
+                WHERE author_id = ${author} AND serie_id = ${series}
+                ORDER BY ${orderBy} ${orderDirection}
+                LIMIT ${PAGE_LIMIT}
+                OFFSET ${skip};`
+    const [book] = await db_connection.query(query)
 
-        return book
-    } if (sortBy[0] === 'order') {
-        const [book] = 
-        sortBy[1] === 'asc'
-        ? await db_connection.query(
-            `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book 
-            WHERE author_id = ? AND serie_id = ?
-            ORDER BY series_num
-            LIMIT ?
-            OFFSET ?;`,
-            [author, series, PAGE_LIMIT, skip])
-        : await db_connection.query(
-            `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book 
-            WHERE author_id = ? AND serie_id = ?
-            ORDER BY series_num DESC
-            LIMIT ?
-            OFFSET ?;`,
-            [author, series, PAGE_LIMIT, skip])
-
-        return book
-    } else {
-        const [book] = 
-            sortBy[1] === 'asc'
-            ? await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book 
-                WHERE author_id = ? AND serie_id = ?
-                ORDER BY rate
-                LIMIT ?
-                OFFSET ?;`,
-                [author, series, PAGE_LIMIT, skip])
-            : await db_connection.query(
-                `SELECT BIN_TO_UUID(id) id, cover, rate, serie_id, title FROM book 
-                WHERE author_id = ? AND serie_id = ?
-                ORDER BY rate DESC
-                LIMIT ?
-                OFSET ?;`,
-                [author, series, PAGE_LIMIT, skip])
-        
-        return book
-    }
+    return book
 }
